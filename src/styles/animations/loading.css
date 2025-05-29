@@ -1,0 +1,32 @@
+@keyframes letter-bounce {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+}
+
+@keyframes progress-sweep {
+  0% {
+    width: 0%;
+    opacity: 1;
+  }
+  70% {
+    width: 70%;
+    opacity: 1;
+  }
+  100% {
+    width: 100%;
+    opacity: 0;
+  }
+}
+
+.animate-letter-bounce {
+  animation: letter-bounce 1.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+.animate-progress-sweep {
+  animation: progress-sweep 2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
