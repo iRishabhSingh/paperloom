@@ -3,6 +3,7 @@ import nodemailer from "nodemailer";
 
 import prisma from "@/lib/prisma";
 import { generateOtp, saveOtp } from "@/lib/otp";
+import { getVerificationEmail } from "@/email/getVerificationEmail";
 
 export async function POST(req: Request) {
   const { email, username, password, firstName, lastName } = await req.json();
@@ -51,10 +52,10 @@ export async function POST(req: Request) {
     });
 
     await transporter.sendMail({
-      from: `"Your App" <${process.env.GMAIL_USER}>`,
-      to: email,
+      from: `"paperloom" <${process.env.GMAIL_USER}>`,
+      to: user.email,
       subject: "Verify your email",
-      text: `Hi ${user.firstName},\n\nYour verification code is: ${otp}\n\nThis code will expire in 10 minutes.`,
+      html: getVerificationEmail(otp, user.firstName),
     });
 
     // Success response

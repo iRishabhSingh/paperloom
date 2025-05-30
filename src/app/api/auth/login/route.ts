@@ -5,6 +5,8 @@ import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { signJwt } from "@/lib/jwt";
 import { generateOtp, saveOtp } from "@/lib/otp";
+import { get2FAEmail } from "@/email/get2FAEmail";
+import { getVerificationEmail } from "@/email/getVerificationEmail";
 
 export async function POST(req: Request) {
   const { emailOrUsername, password } = await req.json();
@@ -56,10 +58,10 @@ export async function POST(req: Request) {
       });
 
       await transporter.sendMail({
-        from: `"Your App" <${process.env.GMAIL_USER}>`,
+        from: `"paperloom" <${process.env.GMAIL_USER}>`,
         to: user.email,
         subject: "Verify your email",
-        text: `Hi ${user.firstName},\n\nYour verification code is: ${otp}\n\nThis code will expire in 10 minutes.`,
+        html: getVerificationEmail(otp, user.firstName),
       });
 
       return NextResponse.json(
@@ -88,10 +90,10 @@ export async function POST(req: Request) {
       });
 
       await transporter.sendMail({
-        from: `"Your App" <${process.env.GMAIL_USER}>`,
+        from: `"paperloom" <${process.env.GMAIL_USER}>`,
         to: user.email,
         subject: "Login 2FA Verification",
-        text: `Hi ${user.firstName},\n\nYour login 2FA code is: ${otp}\n\nThis code will expire in 10 minutes.`,
+        html: get2FAEmail(otp, user.firstName),
       });
 
       // ✅ Add return here to prevent immediate login

@@ -3,6 +3,8 @@ import { NextResponse } from "next/server";
 
 import prisma from "@/lib/prisma";
 import { generateOtp, saveOtp } from "@/lib/otp";
+import { get2FAEmail } from "@/email/get2FAEmail";
+import { getVerificationEmail } from "@/email/getVerificationEmail";
 
 export async function POST(req: Request) {
   const { email, action } = await req.json();
@@ -43,21 +45,21 @@ export async function POST(req: Request) {
     });
 
     let subject = "";
-    let text = "";
+    let html;
 
     if (action === "email-verify") {
       subject = "Verify your email";
-      text = `Hi, \n\nYour email verification code is: ${otp}\nThis code will expire in 10 minutes.`;
+      html = getVerificationEmail(otp, user.firstName);
     } else if (action === "login-verify") {
-      subject = "Login 2FA";
-      text = `Hi, \n\nYour 2FA login code is: ${otp}\nThis code will expire in 10 minutes.`;
+      subject = "Login 2FA Verification";
+      html = get2FAEmail(otp, user.firstName);
     }
 
     await transporter.sendMail({
-      from: `"Your App" <${process.env.GMAIL_USER}>`,
+      from: `"paperloom" <${process.env.GMAIL_USER}>`,
       to: email,
       subject,
-      text,
+      html,
     });
 
     return NextResponse.json(

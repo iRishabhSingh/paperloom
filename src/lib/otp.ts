@@ -1,8 +1,8 @@
 import redis from "@/lib/redis";
-import { randomBytes } from "crypto";
+import { randomInt } from "crypto";
 
 export const generateOtp = () => {
-  return randomBytes(3).toString("hex"); // Generates a 6-digit OTP
+  return randomInt(100000, 1000000).toString(); // returns a 6-digit numeric OTP
 };
 
 export const saveOtp = async (key: string, otp: string, otpExpiry: number) => {

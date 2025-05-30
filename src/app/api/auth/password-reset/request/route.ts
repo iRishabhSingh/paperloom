@@ -1,7 +1,9 @@
 import nodemailer from "nodemailer";
 import { NextResponse } from "next/server";
+
 import prisma from "@/lib/prisma";
 import { generateOtp, saveOtp } from "@/lib/otp";
+import { getResetPasswordEmail } from "@/email/getResetPasswordEmail";
 
 export async function POST(req: Request) {
   const { email } = await req.json();
@@ -31,10 +33,10 @@ export async function POST(req: Request) {
   });
 
   await transporter.sendMail({
-    from: `"Your App" <${process.env.GMAIL_USER}>`,
+    from: `"paperloom" <${process.env.GMAIL_USER}>`,
     to: email,
     subject: "Password Reset OTP",
-    text: `Your password reset code is: ${otp}. It expires in 10 minutes.`,
+    html: getResetPasswordEmail(user.name, otp),
   });
 
   return NextResponse.json(
