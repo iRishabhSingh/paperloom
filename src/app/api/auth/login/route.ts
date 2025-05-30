@@ -95,20 +95,26 @@ export async function POST(req: Request) {
       });
 
       // ✅ Add return here to prevent immediate login
-      return NextResponse.json({
-        message:
-          "2FA OTP sent. Please check your email for the verification code.",
-      });
+      return NextResponse.json(
+        {
+          message:
+            "2FA OTP sent. Please check your email for the verification code.",
+        },
+        { status: 403 }
+      );
     }
 
     // Email verified and 2FA not enabled, generate JWT and login
     const jwtToken = signJwt({ userId: user.id, role: user.role });
 
-    return NextResponse.json({
-      message: "Login successful",
-      twoFA: user.twoFAEnabled,
-      token: jwtToken,
-    });
+    return NextResponse.json(
+      {
+        message: "Login successful",
+        twoFA: user.twoFAEnabled,
+        token: jwtToken,
+      },
+      { status: 200 }
+    );
   } catch (error) {
     console.error("Login error:", error);
     return NextResponse.json(

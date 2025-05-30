@@ -60,11 +60,14 @@ export async function POST(req: Request) {
       text,
     });
 
-    return NextResponse.json({
-      message: `${
-        action === "email-verify" ? "Email verification" : "Login 2FA"
-      } OTP sent successfully.`,
-    });
+    return NextResponse.json(
+      {
+        message: `${
+          action === "email-verify" ? "Email verification" : "Login 2FA"
+        } OTP sent successfully.`,
+      },
+      { status: 200 }
+    );
   } catch (error) {
     console.error("Resend OTP error:", error);
     return NextResponse.json(
