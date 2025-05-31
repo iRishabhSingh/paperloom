@@ -20,6 +20,8 @@
     "nodemailer": "^7.0.3",
     "react": "^18",
     "react-dom": "^18",
+    "react-hot-toast": "^2.5.2",
+    "react-icons": "^5.5.0",
     "zod": "^3.25.41"
   },
   "devDependencies": {
