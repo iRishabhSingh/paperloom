@@ -8,36 +8,46 @@ datasource db {
 }
 
 model User {
-  id              String        @id @default(uuid())
-  role            String        @default("USER") 
-  email           String        @unique
-  username        String        @unique
-  firstName       String
-  middleName      String?       
-  lastName        String
-  name            String        @default("")
-  country         String?       
-  isoCode         String?       
-  phone           String?
-  passwordHash    String
-  emailVerified   Boolean       @default(false)
+  id                  String        @id @default(uuid())
+  role                String        @default("USER")
+  email               String        @unique
+  username            String        @unique
+  firstName           String
+  middleName          String?
+  lastName            String
+  name                String        @default("")
+  country             String?
+  isoCode             String?
+  phone               String?
+  passwordHash        String
+  emailVerified       Boolean       @default(false)
+  twoFAEnabled        Boolean       @default(false)
+  twoFASecret         String?
 
-  twoFAEnabled    Boolean       @default(false)
-  twoFASecret     String?       // Stored as base32, encrypted (TOTP)
+  darkMode            DarkMode      @default(AUTO)
+  contrastMode        ContrastMode  @default(BASIC)
+  theme               Theme         @default(CLASSIC)
 
-  darkMode        DarkMode      @default(AUTO)         // Dark mode setting (AUTO/ON/OFF)
-  contrastMode    ContrastMode  @default(BASIC)        // Contrast mode setting (BASIC/MEDIUM/HIGH)
-  theme           Theme         @default(CLASSIC)      // User's selected color theme
+  profileImageUrl     String?
+  profileImageKey     String?
+  profileImageName    String?
+  profileImageSize    Int?
+  profileImageType    String?
+  profileImageHash    String?
 
-  profileImageUrl String?       
-  status          UserStatus    @default(OFFLINE)
-  accountStatus   AccountStatus @default(ACTIVE)
+  status              UserStatus    @default(OFFLINE)
+  accountStatus       AccountStatus @default(ACTIVE)
 
-  region          String        
-  shardKey        String?       
+  region              String
+  shardKey            String?
 
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+
+  uploadedPdfs        PDF[]         @relation("UserUploads")
+  sharedAccess        SharedUser[]
+  groupMessages       GroupMessage[]
+  notifications       Notification[] @relation("UserToNotification")
 }
 
 enum Role {
@@ -73,4 +83,72 @@ enum DarkMode {
 
 enum Theme {
   CLASSIC
+}
+
+enum SharedStatus {
+  PENDING
+  ACCEPTED
+}
+
+model PDF {
+  id             String          @id @default(uuid())
+  title          String
+  fileName       String
+  fileSize       Int
+  fileType       String
+  fileKey        String
+  ufsUrl         String
+  fileHash       String
+  ownerId        String
+  owner          User            @relation("UserUploads", fields: [ownerId], references: [id])
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  deletedAt      DateTime?
+
+  sharedUsers    SharedUser[]
+  groupMessages  GroupMessage[]
+  notifications  Notification[]  @relation("PDFToNotification")
+}
+
+model SharedUser {
+  id         String       @id @default(uuid())
+  pdfId      String
+  pdf        PDF          @relation(fields: [pdfId], references: [id])
+  userId     String
+  user       User         @relation(fields: [userId], references: [id])
+  status     SharedStatus
+  canReshare Boolean      @default(false)
+  createdAt  DateTime     @default(now())
+  acceptedAt DateTime?
+}
+
+model GroupMessage {
+  id        String   @id @default(uuid())
+  content   String
+  pdfId     String
+  pdf       PDF      @relation(fields: [pdfId], references: [id])
+  senderId  String
+  sender    User     @relation(fields: [senderId], references: [id])
+  createdAt DateTime @default(now())
+
+  @@index([pdfId, createdAt])
+}
+
+model Notification {
+  id          String   @id @default(uuid())
+  type        NotificationType
+  message     String
+  userId      String
+  user        User     @relation("UserToNotification", fields: [userId], references: [id])
+  pdfId       String?
+  pdf         PDF?     @relation("PDFToNotification", fields: [pdfId], references: [id])
+  read        Boolean  @default(false)
+  createdAt   DateTime @default(now())
+}
+
+enum NotificationType {
+  NEW_COMMENT
+  FILE_SHARED
+  ACCESS_REQUEST
+  ACCESS_GRANTED
 }

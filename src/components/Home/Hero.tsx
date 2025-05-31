@@ -31,10 +31,6 @@ const Hero = () => {
           <SmoothScrollLink href="#demo" className="btn btn-outline md:btn-lg">
             Watch Demo
           </SmoothScrollLink>
-          {/* <Link href="#demo" className="btn btn-outline md:btn-lg">
-            Watch Demo
-          </Link> */}
-          {/* <button className="btn btn-outline md:btn-lg">Watch Demo</button> */}
         </div>
       </div>
     </section>

@@ -1,5 +1,10 @@
 import type { Metadata } from "next";
+import { Toaster } from "react-hot-toast";
 import { Poppins } from "next/font/google";
+
+import { extractRouterConfig } from "uploadthing/server";
+import { ourFileRouter } from "@/app/api/uploadthing/core";
+import { NextSSRPlugin } from "@uploadthing/react/next-ssr-plugin";
 
 import "@/app/globals.css";
 
@@ -38,7 +43,17 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className={`${poppins.className} antialiased`}>{children}</body>
+      <body className={`${poppins.className} antialiased`}>
+        <NextSSRPlugin routerConfig={extractRouterConfig(ourFileRouter)} />
+        {children}
+
+        <Toaster
+          position="top-center"
+          toastOptions={{
+            className: "bg-base-200 text-base-content border border-base-300",
+          }}
+        />
+      </body>
     </html>
   );
 }
