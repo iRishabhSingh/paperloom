@@ -63,3 +63,8 @@
 .animate-fadeIn {
   animation: fadeIn 0.2s ease-out forwards;
 }
+
+/* Auth Form Steps */
+.steps .step:before {
+  height: 2px !important;
+}
