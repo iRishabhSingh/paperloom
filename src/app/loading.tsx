@@ -3,11 +3,8 @@ import ThemedText from "@/components/ThemedText";
 
 const Loading = () => {
   return (
-    <div
-      className="h-screen w-full bg-base-100 flex items-center justify-center"
-      data-theme="dark"
-    >
-      <div className="text-center space-y-8">
+    <div className="flex h-screen w-full items-center justify-center bg-base-100">
+      <div className="space-y-8 text-center">
         <div className="flex justify-center">
           {[..."paperloom"].map((char, index) => (
             <div
@@ -17,14 +14,14 @@ const Loading = () => {
             >
               <ThemedText
                 text={char}
-                className="text-5xl text-base-content inline-block"
+                className="inline-block text-5xl text-base-content"
               />
             </div>
           ))}
         </div>
 
-        <div className="w-64 bg-base-200 rounded-full h-1 overflow-hidden mx-auto">
-          <div className="animate-progress-sweep h-full bg-primary rounded-full" />
+        <div className="mx-auto h-1 w-64 overflow-hidden rounded-full bg-base-200">
+          <div className="animate-progress-sweep h-full rounded-full bg-primary" />
         </div>
       </div>
     </div>

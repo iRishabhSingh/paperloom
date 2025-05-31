@@ -4,7 +4,7 @@ export function get2FAEmail(otp: string, name: string): string {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Paperloom - Verify Your Email</title>
+    <title>paperloom - Verify Your Email</title>
     <style>
         body {
             margin: 0;
@@ -141,12 +141,12 @@ export function get2FAEmail(otp: string, name: string): string {
             
             <p>
                 Best regards,<br>
-                <strong>The Paperloom Team</strong>
+                <strong>The paperloom Team</strong>
             </p>
         </div>
         
         <div class="footer">
-            <p>&copy; 2025 Paperloom. All rights reserved.</p>
+            <p>&copy; 2025 paperloom. All rights reserved.</p>
             <p>This email was sent for security purposes</p>
         </div>
     </div>

@@ -4,7 +4,7 @@ export function getVerificationEmail(otp: string, name: string): string {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Paperloom - Verify Your Email</title>
+    <title>paperloom - Verify Your Email</title>
     <style>
         body {
             margin: 0;
@@ -126,7 +126,7 @@ export function getVerificationEmail(otp: string, name: string): string {
         <div class="content">
             <h1>Verify your email address</h1>
             
-            <p>Hi ${name}, welcome to <span class="highlight">Paperloom</span>! Please use this code to verify your account:</p>
+            <p>Hi ${name}, welcome to <span class="highlight">paperloom</span>! Please use this code to verify your account:</p>
             
             <div class="otp-container">
                 <div class="otp-code">${otp}</div>
@@ -145,13 +145,13 @@ export function getVerificationEmail(otp: string, name: string): string {
             
             <p>
                 Best regards,<br>
-                <strong>The Paperloom Team</strong>
+                <strong>The paperloom Team</strong>
             </p>
         </div>
         
         <div class="footer">
-            <p>&copy; 2025 Paperloom. All rights reserved.</p>
-            <p>This email was sent as part of your Paperloom registration</p>
+            <p>&copy; 2025 paperloom. All rights reserved.</p>
+            <p>This email was sent as part of your paperloom registration</p>
         </div>
     </div>
 </body>

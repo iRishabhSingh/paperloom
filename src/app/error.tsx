@@ -21,20 +21,17 @@ export default function ErrorPage({
     error?.message || "An unexpected error occurred. Please try again later.";
 
   return (
-    <div
-      className="h-screen w-full bg-base-100 flex items-center justify-center p-8"
-      data-theme="dark"
-    >
-      <div className="text-center space-y-10">
+    <div className="flex h-screen w-full items-center justify-center bg-base-100 p-8">
+      <div className="space-y-10 text-center">
         <div className="animate-digit-reveal">
           <ThemedText text={errorCode} className="text-9xl text-base-content" />
         </div>
 
-        <p className="text-xl text-base-content animate-text-reveal delay-100">
+        <p className="animate-text-reveal text-xl text-base-content delay-100">
           {errorMessage}
         </p>
 
-        <div className="flex gap-4 justify-center animate-button-reveal delay-200">
+        <div className="animate-button-reveal flex justify-center gap-4 delay-200">
           <button onClick={reset} className="btn btn-outline btn-primary">
             Try Again
           </button>
