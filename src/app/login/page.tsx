@@ -1,5 +1,7 @@
 "use client";
 
+import { useCookies } from "next-client-cookies";
+
 import {
   verifyOtp,
   resendOtp,
@@ -17,6 +19,7 @@ type Step = "login" | "otp";
 type OTPPurpose = "email-verify" | "login-verify" | "reset-verify";
 
 export default function LoginPage() {
+  const cookies = useCookies();
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
@@ -48,7 +51,12 @@ export default function LoginPage() {
       const response = await res.json();
 
       if (res.ok && response.success && response.token) {
-        localStorage.setItem("token", response.token);
+        cookies.set("token", response.token, {
+          secure: process.env.NODE_ENV === "production",
+          sameSite: "lax",
+          expires: 7,
+        });
+
         toast.success("Login successful!");
         router.push("/dashboard");
       } else if (response.requiresOtp) {
@@ -80,7 +88,11 @@ export default function LoginPage() {
       if (response.success) {
         if (response.token) {
           // Save token and redirect
-          localStorage.setItem("token", response.token);
+          cookies.set("token", response.token, {
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "lax",
+            expires: 7,
+          });
           toast.success("Login successful!");
           router.push("/dashboard");
         } else if (otpPurpose === "reset-verify") {
