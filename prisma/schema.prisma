@@ -108,6 +108,10 @@ model PDF {
   sharedUsers    SharedUser[]
   groupMessages  GroupMessage[]
   notifications  Notification[]  @relation("PDFToNotification")
+  publicShares   PublicShare[]
+
+  @@index([ownerId])
+  @@index([createdAt])
 }
 
 model SharedUser {
@@ -123,15 +127,18 @@ model SharedUser {
 }
 
 model GroupMessage {
-  id        String   @id @default(uuid())
-  content   String
-  pdfId     String
-  pdf       PDF      @relation(fields: [pdfId], references: [id])
-  senderId  String
-  sender    User     @relation(fields: [senderId], references: [id])
-  createdAt DateTime @default(now())
+  id         String   @id @default(uuid())
+  content    String
+  pdfId      String
+  pdf        PDF      @relation(fields: [pdfId], references: [id])
+  senderId   String?
+  sender     User?    @relation(fields: [senderId], references: [id])
+  guestName  String?
+  guestEmail String?
+  createdAt  DateTime @default(now())
 
-  @@index([pdfId, createdAt])
+  @@index([pdfId])
+  @@index([createdAt])
 }
 
 model Notification {
@@ -144,6 +151,9 @@ model Notification {
   pdf         PDF?     @relation("PDFToNotification", fields: [pdfId], references: [id])
   read        Boolean  @default(false)
   createdAt   DateTime @default(now())
+
+  @@index([userId, read])
+  @@index([createdAt])
 }
 
 enum NotificationType {
@@ -151,4 +161,15 @@ enum NotificationType {
   FILE_SHARED
   ACCESS_REQUEST
   ACCESS_GRANTED
+}
+
+model PublicShare {
+  id        String   @id @default(uuid())
+  pdfId     String
+  pdf       PDF      @relation(fields: [pdfId], references: [id])
+  token     String   @unique
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+
+  @@index([token])
 }

@@ -4,7 +4,6 @@ import toast from "react-hot-toast";
 import { TbLoader2 } from "react-icons/tb";
 import { useRouter } from "next/navigation";
 import { useCallback, useRef, useState } from "react";
-
 import { useUploadThing } from "@/utils/uploadthing";
 
 interface PDFUploadButtonProps {
@@ -23,17 +22,69 @@ export function PDFUploadButton({
   const router = useRouter();
 
   const { startUpload } = useUploadThing("pdfUploader", {
-    onClientUploadComplete: () => {
-      setIsUploading(false);
-      toast.success("PDF uploaded successfully!");
-      if (inputRef.current) inputRef.current.value = "";
-      onComplete?.();
-      router.refresh();
+    onClientUploadComplete: async (uploadedFiles) => {
+      try {
+        if (!uploadedFiles || uploadedFiles.length === 0) {
+          throw new Error("No files were uploaded");
+        }
+
+        const uploadedFile = uploadedFiles[0];
+
+        // Prepare the PDF data for your database
+        const pdfData = {
+          title: uploadedFile.name.replace(/\.pdf$/i, ""), // Remove .pdf extension
+          fileName: uploadedFile.name,
+          fileSize: uploadedFile.size,
+          fileType: uploadedFile.type || "application/pdf",
+          fileKey: uploadedFile.key,
+          ufsUrl: uploadedFile.ufsUrl,
+          fileHash: uploadedFile.fileHash,
+        };
+
+        // Create the PDF record in your database
+        const response = await fetch("/api/pdfs", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include", // Important for sending cookies
+          body: JSON.stringify(pdfData),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(
+            errorData.message ||
+              errorData.error ||
+              "Failed to create PDF record",
+          );
+        }
+
+        const createdPdf = await response.json();
+        console.log("PDF created successfully:", createdPdf);
+
+        toast.success("PDF uploaded and saved successfully!");
+        router.refresh();
+        onComplete?.();
+      } catch (error) {
+        console.error("Error in upload process:", error);
+        toast.error(
+          error instanceof Error
+            ? error.message
+            : "An error occurred during upload",
+        );
+      } finally {
+        setIsUploading(false);
+        if (inputRef.current) inputRef.current.value = "";
+        toast.dismiss("pdf-upload");
+      }
     },
-    onUploadError: () => {
+    onUploadError: (error) => {
+      console.error("Upload error:", error);
       setIsUploading(false);
-      toast.error("PDF upload failed");
+      toast.error("Failed to upload PDF");
       if (inputRef.current) inputRef.current.value = "";
+      toast.dismiss("pdf-upload");
     },
     onUploadBegin: () => {
       setIsUploading(true);
@@ -46,20 +97,31 @@ export function PDFUploadButton({
       const selectedFile = e.target.files?.[0];
       if (!selectedFile) return;
 
+      // Validate file type
+      const isPdf =
+        selectedFile.type === "application/pdf" ||
+        selectedFile.name.toLowerCase().endsWith(".pdf");
+
+      if (!isPdf) {
+        toast.error("Please upload a PDF file");
+        if (inputRef.current) inputRef.current.value = "";
+        return;
+      }
+
       try {
         await startUpload([selectedFile]);
-        toast.dismiss("pdf-upload");
       } catch (error) {
-        toast.dismiss("pdf-upload");
-        toast.error("Upload failed unexpectedly");
-        console.error("Upload error:", error);
+        console.error("Upload initialization error:", error);
         setIsUploading(false);
         if (inputRef.current) inputRef.current.value = "";
+        toast.dismiss("pdf-upload");
+        toast.error("Failed to start upload");
       }
     },
     [startUpload],
   );
 
+  // Button styling classes
   const baseClasses =
     "btn rounded-full transition-all w-24 sm:w-28 md:w-32 lg:w-36 xl:w-40";
   const variantClasses =
@@ -79,7 +141,7 @@ export function PDFUploadButton({
         type="file"
         ref={inputRef}
         onChange={handleFileChange}
-        accept=".pdf"
+        accept=".pdf,application/pdf"
         className="hidden"
         disabled={isUploading}
       />
