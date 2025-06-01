@@ -5,7 +5,7 @@ export async function register(formData: FormData) {
     // Get base URL dynamically
     const baseUrl = process.env.VERCEL_URL
       ? `https://${process.env.VERCEL_URL}`
-      : process.env.NEXTAUTH_URL || "http://localhost:3000";
+      : (process.env.NEXT_AUTH_URL ?? "http://localhost:3000");
 
     const response = await fetch(`${baseUrl}/api/auth/register`, {
       method: "POST",
@@ -14,7 +14,7 @@ export async function register(formData: FormData) {
 
     // Handle non-JSON responses
     const contentType = response.headers.get("content-type");
-    if (!contentType || !contentType.includes("application/json")) {
+    if (!contentType?.includes("application/json")) {
       const text = await response.text();
       throw new Error(text || "Invalid response from server");
     }
@@ -24,13 +24,16 @@ export async function register(formData: FormData) {
     if (response.ok) {
       return { success: true, message: data.message };
     } else {
-      return { success: false, message: data.message || "Registration failed" };
+      return { success: false, message: data.message ?? "Registration failed" };
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Registration error:", error);
     return {
       success: false,
-      message: error.message || "Network error. Please try again.",
+      message:
+        error instanceof Error
+          ? error.message
+          : "Network error. Please try again.",
     };
   }
 }

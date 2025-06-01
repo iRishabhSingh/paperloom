@@ -1,7 +1,6 @@
 import bcrypt from "bcrypt";
 import nodemailer from "nodemailer";
 import { NextResponse } from "next/server";
-
 import prisma from "@/lib/prisma";
 import { signJwt } from "@/lib/jwt";
 import { generateOtp, saveOtp } from "@/lib/otp";
@@ -10,7 +9,6 @@ import { getVerificationEmail } from "@/email/getVerificationEmail";
 
 export async function POST(req: Request) {
   const { emailOrUsername, password } = await req.json();
-
   const lowerCasedEmailOrUsername = emailOrUsername.toLowerCase();
 
   if (!emailOrUsername || !password) {
@@ -104,17 +102,25 @@ export async function POST(req: Request) {
       );
     }
 
-    // SUCCESSFUL LOGIN
+    // SUCCESSFUL LOGIN - Set HTTP-only cookie
     const jwtToken = signJwt({ userId: user.id, role: user.role });
-
-    return NextResponse.json(
+    const response = NextResponse.json(
       {
         success: true,
         message: "Login successful",
-        token: jwtToken,
       },
       { status: 200 },
     );
+
+    response.cookies.set("token", jwtToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 7 * 24 * 60 * 60, // 7 days
+      path: "/",
+    });
+
+    return response;
   } catch (error) {
     console.error("Login error:", error);
     return NextResponse.json(

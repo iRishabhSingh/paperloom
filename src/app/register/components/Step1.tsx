@@ -2,6 +2,7 @@
 
 import { FaUser, FaTimes } from "react-icons/fa";
 import { useCallback, useEffect, useRef, useState } from "react";
+import Image from "next/image";
 
 interface Step1Props {
   formData: {
@@ -80,7 +81,9 @@ export default function Step1({
           <div className="avatar">
             <div className="relative w-24 rounded-full bg-base-200">
               {previewUrl ? (
-                <img
+                <Image
+                  width={96}
+                  height={96}
                   src={previewUrl}
                   alt="Profile preview"
                   className="h-full w-full object-cover"

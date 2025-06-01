@@ -83,7 +83,7 @@ export default function SignupPage() {
 
     try {
       // Prepare data for API
-      const { confirmPassword, ...submitData } = formData;
+      const { ...submitData } = formData;
 
       // Call registration API
       const response = await fetch("/api/auth/register", {
@@ -107,8 +107,10 @@ export default function SignupPage() {
         { position: "top-center" },
       );
       setStep(4);
-    } catch (err: any) {
-      toast.error(err.message ?? "Something went wrong", {
+    } catch (err: unknown) {
+      const errorMessage =
+        err instanceof Error ? err.message : "Something went wrong";
+      toast.error(errorMessage, {
         position: "top-center",
       });
     } finally {
@@ -137,8 +139,10 @@ export default function SignupPage() {
       }
 
       toast.success("New verification code sent!", { position: "top-center" });
-    } catch (err: any) {
-      toast.error(err.message ?? "Failed to resend code", {
+    } catch (err: unknown) {
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to resend code";
+      toast.error(errorMessage, {
         position: "top-center",
       });
     } finally {
@@ -149,12 +153,9 @@ export default function SignupPage() {
   const handleVerify = async (otp: string) => {
     setLoading(true);
     try {
-      // Call verify OTP API
-      const response = await fetch("/api/auth/verify", {
+      const res = await fetch("/api/auth/verify", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           email: formData.email,
           otp,
@@ -162,13 +163,12 @@ export default function SignupPage() {
         }),
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
+      if (!res.ok) {
+        const errorData = await res.json();
         throw new Error(errorData.error ?? "Verification failed");
       }
 
-      const data = await response.json();
-      toast.success(data.message ?? "Email verified successfully!", {
+      toast.success("Email verified successfully!", {
         position: "top-center",
       });
 
@@ -176,8 +176,10 @@ export default function SignupPage() {
       setTimeout(() => {
         router.push("/dashboard");
       }, 2000);
-    } catch (err: any) {
-      toast.error(err.message ?? "Verification failed", {
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error ? err.message : "Verification failed";
+      toast.error(errorMessage, {
         position: "top-center",
       });
     } finally {
@@ -211,7 +213,7 @@ export default function SignupPage() {
             <Step1
               formData={formData}
               onChange={handleChange}
-              onImageChange={(file) => {}}
+              onImageChange={(file) => file?.name}
             />
           )}
 

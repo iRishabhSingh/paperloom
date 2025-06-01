@@ -53,7 +53,7 @@ export default function Step4({
         </div>
         <h2 className="mt-2 text-xl font-bold">Verify Your Email</h2>
         <p className="mt-2 text-gray-600">
-          We've sent a 6-digit verification code to your email address
+          We&apos;ve sent a 6-digit verification code to your email address
         </p>
         <p className="mt-1 font-medium text-primary">{email}</p>
       </div>

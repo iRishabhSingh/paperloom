@@ -1,25 +1,18 @@
 "use client";
 
-import { useCookies } from "next-client-cookies";
-
-import {
-  verifyOtp,
-  resendOtp,
-  requestPasswordReset,
-} from "@/app/login/actions";
 import { useState } from "react";
 import { toast } from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import AuthLayout from "@/components/AuthLayout";
 import OTPForm from "@/app/login/components/OTPForm";
 import LoginForm from "@/app/login/components/LoginForm";
+import { resendOtp, requestPasswordReset } from "@/app/login/actions";
 import ForgotPasswordModal from "@/app/login/components/ForgotPasswordModal";
 
 type Step = "login" | "otp";
 type OTPPurpose = "email-verify" | "login-verify" | "reset-verify";
 
 export default function LoginPage() {
-  const cookies = useCookies();
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
@@ -42,37 +35,26 @@ export default function LoginPage() {
     try {
       const res = await fetch("/api/auth/login", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ emailOrUsername, password }),
       });
 
       const response = await res.json();
 
-      if (res.ok && response.success && response.token) {
-        cookies.set("token", response.token, {
-          secure: process.env.NODE_ENV === "production",
-          sameSite: "lax",
-          expires: 7,
-        });
-
+      if (res.ok && response.success) {
         toast.success("Login successful!");
         router.push("/dashboard");
       } else if (response.requiresOtp) {
         setEmail(response.email ?? emailOrUsername);
-        setOtpPurpose(response.purpose); // 'email-verify' | 'login-verify'
+        setOtpPurpose(response.purpose);
         setStep("otp");
         toast.success(response.message ?? "OTP sent to your email");
       } else {
         setError(response.message ?? "Something went wrong");
       }
-    } catch (err: unknown) {
-      if (err instanceof Error) {
-        setError(err.message ?? "Login failed");
-      } else {
-        setError("Login failed");
-      }
+    } catch (err) {
+      console.error(err);
+      setError("Login failed");
     } finally {
       setLoading(false);
     }
@@ -83,35 +65,27 @@ export default function LoginPage() {
     setError(null);
 
     try {
-      const response = await verifyOtp({ email, otp, action: otpPurpose });
+      const res = await fetch("/api/auth/verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, otp, action: otpPurpose }),
+      });
 
-      if (response.success) {
-        if (response.token) {
-          // Save token and redirect
-          cookies.set("token", response.token, {
-            secure: process.env.NODE_ENV === "production",
-            sameSite: "lax",
-            expires: 7,
-          });
-          toast.success("Login successful!");
-          router.push("/dashboard");
-        } else if (otpPurpose === "reset-verify") {
-          // Redirect to password reset page
+      const response = await res.json();
+
+      if (res.ok) {
+        if (otpPurpose === "reset-verify") {
           router.push(`/password-reset?email=${encodeURIComponent(email)}`);
         } else {
-          toast.success(response.message ?? "Verification successful");
-          // For email verification, go back to login
-          setStep("login");
+          toast.success("Login successful!");
+          router.push("/dashboard");
         }
       } else {
         setError(response.message ?? "Verification failed");
       }
-    } catch (err: unknown) {
-      if (err instanceof Error) {
-        setError(err.message ?? "Verification failed");
-      } else {
-        setError("Verification failed");
-      }
+    } catch (err) {
+      console.error(err);
+      setError("Verification failed");
     } finally {
       setLoading(false);
     }
