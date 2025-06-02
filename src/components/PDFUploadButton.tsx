@@ -2,93 +2,66 @@
 
 import toast from "react-hot-toast";
 import { TbLoader2 } from "react-icons/tb";
-import { useRouter } from "next/navigation";
-import { useCallback, useRef, useState } from "react";
 import { useUploadThing } from "@/utils/uploadthing";
-
-interface PDFUploadButtonProps {
-  readonly variant?: "primary" | "outline";
-  readonly size?: "normal" | "large";
-  onComplete?: () => void;
-}
+import { PDFUploadButtonProps } from "@/types/types";
+import { useCallback, useRef, useState } from "react";
 
 export function PDFUploadButton({
   variant = "primary",
+  onUploadComplete,
   size = "large",
-  onComplete,
 }: Readonly<PDFUploadButtonProps>) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [isUploading, setIsUploading] = useState(false);
-  const router = useRouter();
 
   const { startUpload } = useUploadThing("pdfUploader", {
-    onClientUploadComplete: async (uploadedFiles) => {
-      try {
-        if (!uploadedFiles || uploadedFiles.length === 0) {
-          throw new Error("No files were uploaded");
-        }
+    onClientUploadComplete: async (files) => {
+      toast.dismiss("upload");
+      setIsUploading(false);
 
-        const uploadedFile = uploadedFiles[0];
+      const uploaded = files?.[0];
+      if (!uploaded) {
+        toast.error("No file uploaded.");
+        return;
+      }
 
-        // Prepare the PDF data for your database
-        const pdfData = {
-          title: uploadedFile.name.replace(/\.pdf$/i, ""), // Remove .pdf extension
-          fileName: uploadedFile.name,
-          fileSize: uploadedFile.size,
-          fileType: uploadedFile.type || "application/pdf",
-          fileKey: uploadedFile.key,
-          ufsUrl: uploadedFile.ufsUrl,
-          fileHash: uploadedFile.fileHash,
-        };
+      // Send metadata to your own API
+      const response = await fetch("/api/pdfs", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          title: uploaded.name.replace(/\\.pdf$/i, ""),
+          fileName: uploaded.name,
+          fileSize: uploaded.size,
+          fileType: uploaded.type,
+          fileKey: uploaded.key,
+          ufsUrl: uploaded.ufsUrl,
+          fileHash: uploaded.fileHash,
+        }),
+      });
 
-        // Create the PDF record in your database
-        const response = await fetch("/api/pdfs", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          credentials: "include", // Important for sending cookies
-          body: JSON.stringify(pdfData),
-        });
+      if (!response.ok) {
+        toast.error("Failed to save PDF to database.");
+        return;
+      }
 
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}));
-          throw new Error(
-            errorData.message ||
-              errorData.error ||
-              "Failed to create PDF record",
-          );
-        }
-
-        const createdPdf = await response.json();
-        console.log("PDF created successfully:", createdPdf);
-
-        toast.success("PDF uploaded and saved successfully!");
-        router.refresh();
-        onComplete?.();
-      } catch (error) {
-        console.error("Error in upload process:", error);
-        toast.error(
-          error instanceof Error
-            ? error.message
-            : "An error occurred during upload",
-        );
-      } finally {
-        setIsUploading(false);
-        if (inputRef.current) inputRef.current.value = "";
-        toast.dismiss("pdf-upload");
+      const pdf = await response.json();
+      toast.success("PDF uploaded successfully!");
+      if (onUploadComplete) {
+        onUploadComplete(pdf.id); // 🔁 Send back the PDF ID
       }
     },
-    onUploadError: (error) => {
-      console.error("Upload error:", error);
-      setIsUploading(false);
-      toast.error("Failed to upload PDF");
-      if (inputRef.current) inputRef.current.value = "";
-      toast.dismiss("pdf-upload");
-    },
+
     onUploadBegin: () => {
       setIsUploading(true);
-      toast.loading("Uploading PDF...", { id: "pdf-upload" });
+      toast.loading("Uploading PDF...", { id: "upload" });
+    },
+
+    onUploadError: () => {
+      toast.dismiss("upload");
+      setIsUploading(false);
+      toast.error("Upload failed");
     },
   });
 
