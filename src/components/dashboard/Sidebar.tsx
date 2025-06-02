@@ -1,4 +1,6 @@
-import React from "react";
+"use client";
+
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -22,6 +24,23 @@ interface SidebarProps {
 
 const Sidebar: React.FC<SidebarProps> = ({ isOpen, closeSidebar }) => {
   const pathname = usePathname();
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  useEffect(() => {
+    const fetchUnreadCount = async () => {
+      try {
+        const response = await fetch("/api/notifications/unread-count");
+        if (response.ok) {
+          const data = await response.json();
+          setUnreadCount(data.count || 0);
+        }
+      } catch (error) {
+        console.error("Failed to fetch unread count:", error);
+      }
+    };
+
+    fetchUnreadCount();
+  }, []);
 
   const navItems = [
     { name: "Dashboard", icon: FiHome, href: "/dashboard" },
@@ -33,7 +52,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, closeSidebar }) => {
       name: "Notifications",
       icon: FiBell,
       href: "/dashboard/notifications",
-      badge: 3,
+      badge: unreadCount,
     },
     { name: "Settings", icon: FiSettings, href: "/dashboard/settings" },
   ];

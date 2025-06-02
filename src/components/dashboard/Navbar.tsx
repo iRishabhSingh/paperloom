@@ -1,17 +1,38 @@
-import React from "react";
-import { FiMenu, FiBell, FiSearch } from "react-icons/fi";
+// components/Navbar.tsx
+"use client";
+
+import React, { useEffect, useState } from "react";
+import { FiMenu, FiSearch } from "react-icons/fi";
 import Logout from "../Logout";
 import Link from "next/link";
+import NotificationDropdown from "./NotificationDropdown";
 
 interface NavbarProps {
   toggleSidebar: () => void;
 }
 
 const Navbar: React.FC<NavbarProps> = ({ toggleSidebar }) => {
+  const [userInitials, setUserInitials] = useState("");
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const response = await fetch("/api/auth/me");
+        if (response.ok) {
+          const data = await response.json();
+          setUserInitials(data.initials);
+        }
+      } catch (error) {
+        console.error("Failed to fetch user data:", error);
+      }
+    };
+
+    fetchUserData();
+  }, []);
+
   return (
     <header className="z-30 bg-base-100 shadow-sm">
       <div className="flex items-center justify-between p-4">
-        {/* Left side */}
         <div className="flex items-center space-x-4">
           <button
             title="Toggle Sidebar"
@@ -33,14 +54,8 @@ const Navbar: React.FC<NavbarProps> = ({ toggleSidebar }) => {
           </div>
         </div>
 
-        {/* Right side */}
         <div className="flex items-center space-x-4">
-          <button title="Notifications" className="btn btn-circle btn-ghost">
-            <div className="indicator">
-              <FiBell size={20} />
-              <span className="badge indicator-item badge-primary badge-xs"></span>
-            </div>
-          </button>
+          <NotificationDropdown />
 
           <div className="dropdown dropdown-end">
             <button
@@ -50,7 +65,7 @@ const Navbar: React.FC<NavbarProps> = ({ toggleSidebar }) => {
               type="button"
             >
               <div className="flex w-10 items-center justify-center rounded-full bg-neutral text-neutral-content">
-                <span className="font-semibold">JD</span>
+                <span className="font-semibold">{userInitials}</span>
               </div>
             </button>
             <ul className="menu dropdown-content mt-2 w-52 rounded-box bg-base-100 p-2 shadow">
