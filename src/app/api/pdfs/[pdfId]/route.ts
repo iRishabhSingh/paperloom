@@ -2,13 +2,24 @@ import { NextResponse } from "next/server";
 
 import prisma from "@/lib/prisma";
 import { getAuthUser } from "@/lib/auth";
+import { cookies } from "next/headers";
 
 export async function GET(
   req: Request,
   { params }: { params: { pdfId: string } },
 ) {
   try {
-    const user = await getAuthUser(req);
+    // Get cookies from the incoming request
+    const cookieStore = cookies();
+
+    // Create a new Request object with cookies for getAuthUser
+    const authRequest = new Request(req.url, {
+      headers: {
+        Cookie: cookieStore.toString(),
+      },
+    });
+
+    const user = await getAuthUser(authRequest);
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
