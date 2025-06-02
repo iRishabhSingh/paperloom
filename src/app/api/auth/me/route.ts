@@ -20,7 +20,7 @@ export async function GET() {
       typeof decoded !== "object" ||
       decoded === null ||
       !("userId" in decoded) ||
-      !(decoded as any)?.userId
+      !decoded?.userId
     ) {
       return NextResponse.json({ message: "Invalid token" }, { status: 401 });
     }
