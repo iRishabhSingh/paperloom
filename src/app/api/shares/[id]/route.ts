@@ -61,7 +61,7 @@ export async function DELETE(
     await prisma.sharedUser.delete({ where: { id: params.id } });
     await sendShareNotification({
       pdfId: share.pdfId,
-      userId: share.userId,
+      userId: share.userId || "",
       action: "removed",
     });
 
