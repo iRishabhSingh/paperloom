@@ -66,7 +66,7 @@ export default async function ChatPage({
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <PDFChatView pdf={pdf} userId={user?.id ?? ""} />
+      <PDFChatView pdf={pdf} />
     </div>
   );
 }
