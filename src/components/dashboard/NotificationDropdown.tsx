@@ -6,9 +6,9 @@ import { FiBell, FiCheck, FiTrash2 } from "react-icons/fi";
 interface Notification {
   id: string;
   title: string;
+  read: boolean;
   message: string;
   createdAt: string;
-  read: boolean;
 }
 
 const NotificationDropdown = () => {
@@ -38,7 +38,7 @@ const NotificationDropdown = () => {
   const markAsRead = async (id: string) => {
     try {
       await fetch(`/api/notifications/${id}`, { method: "POST" });
-      fetchNotifications(); // Refresh notifications
+      fetchNotifications();
     } catch (error) {
       console.error("Failed to mark as read:", error);
     }
@@ -47,7 +47,7 @@ const NotificationDropdown = () => {
   const deleteNotification = async (id: string) => {
     try {
       await fetch(`/api/notifications/${id}`, { method: "DELETE" });
-      fetchNotifications(); // Refresh notifications
+      fetchNotifications();
     } catch (error) {
       console.error("Failed to delete notification:", error);
     }
@@ -56,7 +56,7 @@ const NotificationDropdown = () => {
   const markAllAsRead = async () => {
     try {
       await fetch("/api/notifications/mark-all-read", { method: "POST" });
-      fetchNotifications(); // Refresh notifications
+      fetchNotifications();
     } catch (error) {
       console.error("Failed to mark all as read:", error);
     }
@@ -67,6 +67,62 @@ const NotificationDropdown = () => {
       fetchNotifications();
     }
   }, [isOpen]);
+
+  const renderContent = () => {
+    if (loading) {
+      return (
+        <div className="flex justify-center p-4">
+          <span className="loading loading-spinner"></span>
+        </div>
+      );
+    }
+
+    if (length === 0) {
+      return (
+        <div className="p-4 text-center text-sm text-base-content/70">
+          No notifications yet
+        </div>
+      );
+    }
+
+    return (
+      <ul className="max-h-96 overflow-y-auto">
+        {notifications.map((notification) => (
+          <li key={notification.id}>
+            <div
+              className={`flex flex-col gap-1 ${notification.read ? "" : "bg-primary/10"}`}
+            >
+              <div className="flex items-start justify-between">
+                <div>
+                  <h4 className="font-medium">{notification.title}</h4>
+                  <p className="text-sm">{notification.message}</p>
+                </div>
+                <div className="flex gap-1">
+                  <button
+                    onClick={() => markAsRead(notification.id)}
+                    className="btn btn-ghost btn-xs"
+                    title="Mark as read"
+                  >
+                    <FiCheck size={14} />
+                  </button>
+                  <button
+                    onClick={() => deleteNotification(notification.id)}
+                    className="btn btn-ghost btn-xs text-error"
+                    title="Delete"
+                  >
+                    <FiTrash2 size={14} />
+                  </button>
+                </div>
+              </div>
+              <span className="text-xs text-base-content/50">
+                {new Date(notification.createdAt).toLocaleString()}
+              </span>
+            </div>
+          </li>
+        ))}
+      </ul>
+    );
+  };
 
   return (
     <div className="dropdown dropdown-end">
@@ -99,51 +155,7 @@ const NotificationDropdown = () => {
               </button>
             </div>
 
-            {loading ? (
-              <div className="flex justify-center p-4">
-                <span className="loading loading-spinner"></span>
-              </div>
-            ) : length === 0 ? (
-              <div className="p-4 text-center text-sm text-base-content/70">
-                No notifications yet
-              </div>
-            ) : (
-              <ul className="max-h-96 overflow-y-auto">
-                {notifications.map((notification) => (
-                  <li key={notification.id}>
-                    <div
-                      className={`flex flex-col gap-1 ${notification.read ? "" : "bg-primary/10"}`}
-                    >
-                      <div className="flex items-start justify-between">
-                        <div>
-                          <h4 className="font-medium">{notification.title}</h4>
-                          <p className="text-sm">{notification.message}</p>
-                        </div>
-                        <div className="flex gap-1">
-                          <button
-                            onClick={() => markAsRead(notification.id)}
-                            className="btn btn-ghost btn-xs"
-                            title="Mark as read"
-                          >
-                            <FiCheck size={14} />
-                          </button>
-                          <button
-                            onClick={() => deleteNotification(notification.id)}
-                            className="btn btn-ghost btn-xs text-error"
-                            title="Delete"
-                          >
-                            <FiTrash2 size={14} />
-                          </button>
-                        </div>
-                      </div>
-                      <span className="text-xs text-base-content/50">
-                        {new Date(notification.createdAt).toLocaleString()}
-                      </span>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            )}
+            {renderContent()}
           </div>
         </div>
       )}

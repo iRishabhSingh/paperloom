@@ -29,6 +29,33 @@ export default async function ChatPage({
 
   if (!pdf) return notFound();
 
+  interface SharedUserType {
+    userId: string;
+    inviteeEmail?: string;
+    status: string;
+  }
+
+  interface PdfType {
+    ownerId: string;
+    sharedUsers: SharedUserType[];
+  }
+
+  interface UserType {
+    id?: string;
+    email?: string;
+  }
+
+  const canAccess: boolean =
+    (pdf as PdfType).ownerId === (user as UserType)?.id ||
+    (pdf as PdfType).sharedUsers.some(
+      (su: SharedUserType) =>
+        (su.userId === (user as UserType)?.id ||
+          su.inviteeEmail === (user as UserType)?.email) &&
+        su.status === "ACCEPTED",
+    );
+
+  if (!canAccess) return notFound();
+
   const isOwner = pdf.ownerId === user?.id;
   const isSharedUser = pdf.sharedUsers?.some(
     (sharedUser: SharedUser) =>

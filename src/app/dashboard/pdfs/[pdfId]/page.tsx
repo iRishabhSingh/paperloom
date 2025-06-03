@@ -29,6 +29,35 @@ export default async function PDFOverviewPage({
 
   if (!pdf) return notFound();
 
+  // Updated access check
+  interface SharedUserType {
+    userId: string;
+    inviteeEmail?: string;
+    status: string;
+  }
+
+  interface PdfType {
+    ownerId: string;
+    sharedUsers: SharedUserType[];
+    // Add other properties as needed
+  }
+
+  interface UserType {
+    id?: string;
+    email?: string;
+  }
+
+  const canAccess: boolean =
+    (pdf as PdfType).ownerId === (user as UserType)?.id ||
+    (pdf as PdfType).sharedUsers.some(
+      (su: SharedUserType) =>
+        (su.userId === (user as UserType)?.id ||
+          su.inviteeEmail === (user as UserType)?.email) &&
+        su.status === "ACCEPTED",
+    );
+
+  if (!canAccess) return notFound();
+
   // Enhanced access check
   const isOwner = pdf.ownerId === user?.id;
   const isSharedUser = pdf.sharedUsers?.some(

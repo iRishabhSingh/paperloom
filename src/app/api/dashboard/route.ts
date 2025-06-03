@@ -18,12 +18,24 @@ export async function GET(req: Request) {
       where: {
         OR: [
           { ownerId: user.id },
-          { sharedUsers: { some: { userId: user.id, status: "ACCEPTED" } } },
+          {
+            sharedUsers: {
+              some: {
+                userId: user.id,
+                status: "ACCEPTED", // Ensure only accepted collaborations
+              },
+            },
+          },
         ],
         fileName: { contains: searchQuery, mode: "insensitive" },
       },
       include: {
         owner: { select: { name: true, email: true } },
+        // Add sharedUsers to verify collaboration status
+        sharedUsers: {
+          where: { userId: user.id, status: "ACCEPTED" },
+          select: { status: true },
+        },
       },
       orderBy: { createdAt: "desc" },
     });

@@ -45,9 +45,10 @@ model User {
   updatedAt           DateTime      @updatedAt
 
   uploadedPdfs        PDF[]         @relation("UserUploads")
-  sharedAccess        SharedUser[]
   groupMessages       GroupMessage[]
   notifications       Notification[] @relation("UserToNotification")
+  invitedShares       SharedUser[]   @relation("Inviter")
+  sharedPdfs          SharedUser[]   @relation("SharedUserToUser")
 }
 
 enum Role {
@@ -88,6 +89,7 @@ enum Theme {
 enum SharedStatus {
   PENDING
   ACCEPTED
+  REJECTED
 }
 
 model PDF {
@@ -105,7 +107,7 @@ model PDF {
   updatedAt      DateTime        @updatedAt
   deletedAt      DateTime?
 
-  sharedUsers    SharedUser[]
+  sharedUsers    SharedUser[]    @relation("PDFToSharedUser")
   groupMessages  GroupMessage[]
   notifications  Notification[]  @relation("PDFToNotification")
   publicShares   PublicShare[]
@@ -115,15 +117,22 @@ model PDF {
 }
 
 model SharedUser {
-  id         String       @id @default(uuid())
-  pdfId      String
-  pdf        PDF          @relation(fields: [pdfId], references: [id])
-  userId     String
-  user       User         @relation(fields: [userId], references: [id])
-  status     SharedStatus
-  canReshare Boolean      @default(false)
-  createdAt  DateTime     @default(now())
-  acceptedAt DateTime?
+  id          String       @id @default(uuid())
+  pdfId       String
+  pdf         PDF          @relation("PDFToSharedUser", fields: [pdfId], references: [id])
+  userId      String?      // Nullable until accepted
+  user        User?        @relation("SharedUserToUser", fields: [userId], references: [id])
+  inviteeEmail String      // Email of invited user
+  token       String       @unique // Invitation token
+  status      SharedStatus @default(PENDING)
+  canReshare  Boolean      @default(false)
+  createdAt   DateTime     @default(now())
+  acceptedAt  DateTime?
+  invitedById String       // User who sent the invitation
+  invitedBy   User         @relation("Inviter", fields: [invitedById], references: [id])
+
+  @@index([inviteeEmail, status])
+  @@index([userId, status])
 }
 
 model GroupMessage {
@@ -131,7 +140,7 @@ model GroupMessage {
   content    String
   pdfId      String
   pdf        PDF      @relation(fields: [pdfId], references: [id])
-  senderId   String?
+  senderId   String?  // Make sure this is optional
   sender     User?    @relation(fields: [senderId], references: [id])
   guestName  String?
   guestEmail String?
@@ -167,6 +176,7 @@ model PublicShare {
   id        String   @id @default(uuid())
   pdfId     String
   pdf       PDF      @relation(fields: [pdfId], references: [id])
+  accepted   Boolean   @default(false)
   token     String   @unique
   createdAt DateTime @default(now())
   expiresAt DateTime

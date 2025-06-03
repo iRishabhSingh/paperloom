@@ -14,10 +14,19 @@ export function ShareViaEmailForm({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setStatus("Please enter a valid email address");
+      return;
+    }
+
     setIsLoading(true);
 
     try {
-      const res = await fetch("/api/shares", {
+      const res = await fetch("/api/collaborations", {
+        // CHANGED ENDPOINT
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ pdfId, recipientEmail: email }),
