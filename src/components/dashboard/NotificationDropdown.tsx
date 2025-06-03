@@ -17,7 +17,7 @@ const NotificationDropdown = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  const length = notifications.length ?? 0;
+  const length = notifications ? notifications.length : 0;
 
   const fetchNotifications = async () => {
     try {
