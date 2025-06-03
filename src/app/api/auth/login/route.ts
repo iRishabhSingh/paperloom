@@ -1,4 +1,4 @@
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import nodemailer from "nodemailer";
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";

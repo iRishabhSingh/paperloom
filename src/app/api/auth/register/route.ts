@@ -1,4 +1,4 @@
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import nodemailer from "nodemailer";
 
 import prisma from "@/lib/prisma";
@@ -63,7 +63,7 @@ export async function POST(req: Request) {
       JSON.stringify({
         message: "User registered successfully. Check your email for OTP.",
       }),
-      { status: 200 }
+      { status: 200 },
     );
   } catch (error) {
     console.error("Registration error:", error);

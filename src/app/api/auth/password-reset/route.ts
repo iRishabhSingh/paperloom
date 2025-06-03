@@ -1,4 +1,4 @@
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 
@@ -8,7 +8,7 @@ export async function POST(req: Request) {
   if (!email || !newPassword) {
     return NextResponse.json(
       { message: "Email and new password are required" },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -19,7 +19,7 @@ export async function POST(req: Request) {
       // Optional: Hide user existence for security reasons
       return NextResponse.json(
         { message: "If that email is registered, password has been reset." },
-        { status: 200 }
+        { status: 200 },
       );
     }
 
@@ -32,13 +32,13 @@ export async function POST(req: Request) {
 
     return NextResponse.json(
       { message: "Password reset successful" },
-      { status: 200 }
+      { status: 200 },
     );
   } catch (error) {
     console.error("Password reset error:", error);
     return NextResponse.json(
       { message: "Something went wrong" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
