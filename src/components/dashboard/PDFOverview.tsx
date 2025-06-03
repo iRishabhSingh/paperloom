@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import PdfViewer from "@/components/dashboard/PdfViewer";
 import { FiChevronLeft, FiUsers, FiMessageSquare } from "react-icons/fi";
@@ -14,10 +14,21 @@ export default function PDFOverview({
 }: Readonly<PDFOverviewProps>) {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState("preview");
-  const [collaborators, setCollaborators] = useState(pdf.sharedUsers || []);
+  const [collaborators, setCollaborators] = useState<
+    Array<SharedUser & { user: User | null }>
+  >(pdf.sharedUsers || []);
+  const [dateString, setDateString] = useState("");
+
+  useEffect(() => {
+    // Client-side date formatting to match server format
+    const date = new Date(pdf.createdAt);
+    setDateString(
+      `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`,
+    );
+  }, [pdf.createdAt]);
 
   const handleCollaboratorAdded = (
-    newCollaborator: SharedUser & { user: User },
+    newCollaborator: SharedUser & { user: User | null },
   ) => {
     setCollaborators([...collaborators, newCollaborator]);
   };
@@ -46,7 +57,12 @@ export default function PDFOverview({
         <div>
           <h1 className="text-2xl font-bold">{pdf.title}</h1>
           <p className="text-base-content/60">
-            {new Date(pdf.createdAt).toLocaleDateString()}
+            {dateString || (
+              // Fallback during initial render
+              <span className="invisible">
+                {new Date(pdf.createdAt).toLocaleDateString()}
+              </span>
+            )}
             {pdf.ownerId === userId ? " • You own this document" : ""}
           </p>
         </div>
@@ -94,13 +110,15 @@ export default function PDFOverview({
               <p className="text-base-content/60">No collaborators yet</p>
             ) : (
               <ul className="space-y-3">
-                {collaborators.map((collab: SharedUser & { user: User }) => (
+                {collaborators.map((collab) => (
                   <li
                     key={collab.id}
                     className="flex items-center justify-between"
                   >
                     <div>
-                      <p className="font-medium">{collab.user.email}</p>
+                      <p className="font-medium">
+                        {collab.user?.email ?? "Invited (email not available)"}
+                      </p>
                       <p className="text-sm text-base-content/60">
                         {collab.status === "ACCEPTED" ? "Accepted" : "Pending"}
                       </p>

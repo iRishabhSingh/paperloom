@@ -7,7 +7,7 @@ export default function PdfViewer({ url }: { readonly url: string }) {
   const [pageNumber, setPageNumber] = useState(1);
 
   return (
-    <div className="flex h-full flex-col overflow-hidden rounded-lg border bg-base-100">
+    <div className="flex h-full min-h-48 flex-col overflow-hidden rounded-lg border bg-base-100">
       <div className="flex items-center justify-between border-b bg-base-200 p-2">
         <div className="flex items-center gap-2">
           <button
