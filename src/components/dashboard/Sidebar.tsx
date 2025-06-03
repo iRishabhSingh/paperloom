@@ -5,7 +5,7 @@ import {
   FiHome,
   FiBell,
   FiFile,
-  FiShare2,
+  // FiShare2,
   FiSettings,
   FiMessageSquare,
 } from "react-icons/fi";
@@ -68,12 +68,12 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, closeSidebar }) => {
       href: "/dashboard/pdfs",
       badge: counts.pdfCount,
     },
-    {
-      name: "Shared Files",
-      icon: FiShare2,
-      href: "/dashboard/shared",
-      badge: counts.publicShareCount,
-    },
+    // {
+    //   name: "Shared Files",
+    //   icon: FiShare2,
+    //   href: "/dashboard/shared",
+    //   badge: counts.publicShareCount,
+    // },
     {
       name: "Collaborations",
       icon: FiMessageSquare,

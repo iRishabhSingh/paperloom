@@ -11,8 +11,6 @@ export async function POST(req: Request) {
   const { title, fileKey, fileName, fileSize, ufsUrl, fileHash } =
     await req.json();
 
-  console.log(req.json());
-
   try {
     const pdf = await prisma.pDF.create({
       data: {

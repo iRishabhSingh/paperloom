@@ -70,7 +70,7 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({
 
   const handleResultClick = (pdfId: string) => {
     onClose();
-    router.push(`/pdf/${pdfId}`);
+    router.push(`/dashboard/pdf/${pdfId}`);
   };
 
   const renderResults = () => {
