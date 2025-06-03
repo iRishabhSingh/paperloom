@@ -1,6 +1,5 @@
 import nodemailer from "nodemailer";
 import { NextResponse } from "next/server";
-
 import prisma from "@/lib/prisma";
 import { getAuthUser } from "@/lib/auth";
 import { getNewCommentEmail } from "@/email/getNewCommentEmail";
@@ -52,7 +51,7 @@ export async function GET(req: Request) {
       where: { pdfId },
       orderBy: { createdAt: "asc" },
       include: {
-        sender: { select: { name: true, profileImageUrl: true } },
+        sender: { select: { id: true, name: true, profileImageUrl: true } },
       },
     });
 
@@ -117,6 +116,9 @@ export async function POST(req: Request) {
         guestName: authUser ? null : guestName,
         guestEmail: authUser ? null : guestEmail,
       },
+      include: {
+        sender: { select: { id: true, name: true, profileImageUrl: true } },
+      },
     });
 
     if (pdfOwnerId !== authUser?.id) {
@@ -148,6 +150,68 @@ export async function POST(req: Request) {
     console.error("Comment error:", error);
     return NextResponse.json(
       { error: "Failed to add comment" },
+      { status: 500 },
+    );
+  }
+}
+
+export async function PATCH(
+  req: Request,
+  { params }: { params: { commentId: string } },
+) {
+  try {
+    const user = await getAuthUser(req);
+    const { content } = await req.json();
+
+    const comment = await prisma.groupMessage.update({
+      where: {
+        id: params.commentId,
+        senderId: user?.id ?? undefined,
+      },
+      data: { content },
+      include: {
+        sender: { select: { id: true, name: true, profileImageUrl: true } },
+      },
+    });
+
+    return NextResponse.json(comment);
+  } catch (error) {
+    console.error("Update comment error:", error);
+    return NextResponse.json(
+      { error: "Failed to update comment" },
+      { status: 500 },
+    );
+  }
+}
+
+export async function DELETE(
+  req: Request,
+  { params }: { params: { commentId: string } },
+) {
+  try {
+    const user = await getAuthUser(req);
+    const comment = await prisma.groupMessage.findUnique({
+      where: { id: params.commentId },
+      include: { pdf: true },
+    });
+
+    if (!comment) {
+      return NextResponse.json({ error: "Comment not found" }, { status: 404 });
+    }
+
+    const isOwner = comment.pdf.ownerId === user?.id;
+    const isAuthor = comment.senderId === user?.id;
+
+    if (!isOwner && !isAuthor) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    await prisma.groupMessage.delete({ where: { id: params.commentId } });
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("Delete comment error:", error);
+    return NextResponse.json(
+      { error: "Failed to delete comment" },
       { status: 500 },
     );
   }

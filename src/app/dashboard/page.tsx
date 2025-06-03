@@ -27,7 +27,7 @@ const DashboardPage = () => {
                 </div>
                 <div>
                   <p className="font-medium">
-                    Alex Johnson commented on Product Roadmap
+                    Shubhav Singh commented on Product Roadmap
                   </p>
                   <p className="mt-1 text-sm text-base-content/60">
                     2 hours ago

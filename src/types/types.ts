@@ -70,16 +70,6 @@ export interface SharedUser {
   acceptedAt?: Date | null;
 }
 
-export interface GroupMessage {
-  id: string;
-  content: string;
-  pdfId: string;
-  senderId?: string | null;
-  guestName?: string | null;
-  guestEmail?: string | null;
-  createdAt: Date;
-}
-
 export interface Notification {
   id: string;
   type: NotificationType;
@@ -124,11 +114,6 @@ export interface PDFUploadButtonProps {
   onUploadComplete?: (pdfId: string) => void;
 }
 
-export interface PDFChatViewProps {
-  pdf: PDF;
-  userId: string;
-}
-
 export interface PDFOverviewProps {
   pdf: PDF & {
     owner: { name: string; email: string };
@@ -148,3 +133,28 @@ export interface UploadModalProps {
   onClose: () => void;
   pdfId: string | null;
 }
+
+export type GroupMessage = {
+  id: string;
+  content: string;
+  createdAt: Date;
+  updatedAt: Date;
+  pdfId: string;
+  senderId: string | null;
+  sender?: {
+    id: string;
+    name: string | null;
+    profileImageUrl: string | null;
+  };
+  guestName: string | null;
+  guestEmail: string | null;
+};
+
+export type PDFChatViewProps = {
+  pdf: {
+    id: string;
+    ufsUrl: string;
+    title: string;
+    ownerId: string;
+  };
+};

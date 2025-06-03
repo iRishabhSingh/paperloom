@@ -102,7 +102,7 @@ const Benefits = () => {
                 commenting system is revolutionary!&quot;
               </p>
               <p className="text-sm font-semibold md:text-base">
-                — Alex Chen, Product Manager
+                — Hrishabh Singh, Creator
               </p>
             </div>
           </div>
